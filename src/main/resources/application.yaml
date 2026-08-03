@@ -1,3 +1,37 @@
 spring:
+  liquibase:
+    change-log: classpath:db/master.yaml
   application:
     name: user-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        default_schema: user_schema
+  logging:
+    level:
+      root: INFO
+      liquibase: DEBUG
+      com.zaxxer.hikari: DEBUG
+      org.hibernate.SQL: DEBUG
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: ${KEYCLOAK_CLIENT_ID}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            client-name: user-service
+            authorization-grant-type: client_credentials
+            scope: openid, profile, email
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI}
+
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}

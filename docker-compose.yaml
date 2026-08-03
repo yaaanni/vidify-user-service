@@ -1,0 +1,18 @@
+include:
+  - path: ../infra/docker-compose.yml
+
+#services:
+#  user_service:
+#    build:
+#      context: .
+#    container_name: user_service
+#    depends_on:
+#      - keycloak
+#    ports:
+#      - "8091:8080"
+#    networks:
+#      - vidify_net
+#
+#networks:
+#  vidify_net:
+#    external: true
