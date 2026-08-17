@@ -74,6 +74,16 @@ public class KeycloakAdminClientAdapter {
         }
     }
 
+    public boolean existsByEmail(String email) {
+        try {
+            List<KeycloakUserResponse> users = keycloakAdminClient.searchByEmail(this.realm, email, true);
+            return users != null && !users.isEmpty();
+        } catch (Exception ex) {
+            log.error("Failed to check user existence in Keycloak for email: {}", email, ex);
+            throw new KeycloakIntegrationException("Failed to verify user in Keycloak", ex);
+        }
+    }
+
     private UUID extractUserIdFromLocation(URI location) {
         String path = location.getPath();
         String rawId = path.substring(path.lastIndexOf('/') + 1);

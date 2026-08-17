@@ -36,8 +36,9 @@ public class KafkaEmailSenderService implements EmailSenderService {
         log.info("Sent {} OTP for email {} to Kafka topic: {}", type, event.email(), notificationTopic);
     }
 
-    public void fallbackSendOtp(String toEmail, String otpCode, Throwable t) {
-        log.error("Kafka unavailable or Circuit Breaker triggered for email {}. Reason: {}", toEmail, t.getMessage());
+    public void fallbackSendOtp(String toEmail, String otpCode, OtpType type, Throwable t) {
+        log.error("Kafka unavailable or Circuit Breaker triggered for email {} (type: {}). Reason: {}",
+                toEmail, type, t.getMessage());
 
         throw new OtpDeliveryException("Service is temporarily unavailable. Please try again later.", t);
     }

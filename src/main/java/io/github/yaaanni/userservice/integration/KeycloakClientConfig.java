@@ -53,4 +53,16 @@ public class KeycloakClientConfig {
 
         return factory.createClient(KeycloakAdminClient.class);
     }
+
+    @Bean
+    public KeycloakAuthClient keycloakAuthClient() {
+        RestClient restClient = RestClient.builder()
+                .baseUrl(serverUrl)
+                .build();
+
+        RestClientAdapter adapter = RestClientAdapter.create(restClient);
+        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
+
+        return factory.createClient(KeycloakAuthClient.class);
+    }
 }

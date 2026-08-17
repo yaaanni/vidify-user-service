@@ -1,14 +1,14 @@
 package io.github.yaaanni.userservice.controller;
 
-import io.github.yaaanni.userservice.dto.PasswordResetConfirmRequest;
-import io.github.yaaanni.userservice.dto.PasswordResetInitRequest;
-import io.github.yaaanni.userservice.dto.RegistrationConfirmRequest;
-import io.github.yaaanni.userservice.dto.RegistrationInitRequest;
-import io.github.yaaanni.userservice.service.RegistrationService;
+import io.github.yaaanni.userservice.dto.*;
+import io.github.yaaanni.userservice.integration.KeycloakTokenResponse;
+import io.github.yaaanni.userservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,29 +19,50 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final RegistrationService registrationService;
+    private final AuthService authService;
 
     @PostMapping("/register/init")
     public ResponseEntity<Void> initiateRegistration(@Valid @RequestBody RegistrationInitRequest request) {
-        registrationService.initiateRegistration(request);
+        authService.initiateRegistration(request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/register/confirm")
-    public ResponseEntity<Void> confirmRegistration(@Valid @RequestBody RegistrationConfirmRequest request) {
-        registrationService.confirmRegistration(request);
+    public ResponseEntity<KeycloakTokenResponse> confirmRegistration(@Valid @RequestBody RegistrationConfirmRequest request) {
+        authService.confirmRegistration(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/reset/init")
     public ResponseEntity<Void> initiatePasswordReset(@Valid @RequestBody PasswordResetInitRequest request) {
-        registrationService.initiatePasswordReset(request);
+        authService.initiatePasswordReset(request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/reset/confirm")
     public ResponseEntity<Void> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
-        registrationService.confirmPasswordReset(request);
+        authService.confirmPasswordReset(request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<KeycloakTokenResponse> login(@Valid @RequestBody LoginRequest request) {
+        KeycloakTokenResponse response = authService.login(request.email(), request.password());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<KeycloakTokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        KeycloakTokenResponse response = authService.refreshTokens(request.refreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody LogoutRequest request
+    ) {
+        authService.logout(jwt.getSubject(), request.refreshToken());
+        return ResponseEntity.noContent().build();
     }
 }
