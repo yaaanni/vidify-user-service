@@ -1,6 +1,50 @@
 databaseChangeLog:
   - changeSet:
-      id: 000-create-user-settings-table
+      id: 000-create-users-table
+      author: dev
+      changes:
+        - createTable:
+            schemaName: user_schema
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: nickname
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 001-create-user-settings-table
       author: dev
       changes:
         - createTable:
@@ -13,6 +57,11 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
                     nullable: false
+                    foreignKeyName: fk_user_settings_users
+                    referencedTableSchema: user_schema
+                    referencedTableName: users
+                    referencedColumnNames: id
+                    deleteCascade: true
               - column:
                   name: auto_convert_to_video
                   type: BOOLEAN

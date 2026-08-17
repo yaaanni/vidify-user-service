@@ -43,4 +43,9 @@ public class UserSettings {
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private User user;
 }

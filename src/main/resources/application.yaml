@@ -1,40 +1,70 @@
 spring:
-  liquibase:
-    change-log: classpath:db/master.yaml
   application:
     name: user-service
+  threads:
+    virtual:
+      enabled: true
+  liquibase:
+    change-log: classpath:db/master.yaml
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-  redis:
-    host: localhost
-    port: 6379
+  data:
+    redis:
+      host: localhost
+      port: 6380
   jpa:
     properties:
       hibernate:
         default_schema: user_schema
-  logging:
-    level:
-      root: INFO
-      liquibase: DEBUG
-      com.zaxxer.hikari: DEBUG
-      org.hibernate.SQL: DEBUG
   security:
     oauth2:
       client:
         registration:
-          keycloak:
-            provider: keycloak
+          keycloak-admin:
+            provider: keycloak-admin
             client-id: ${KEYCLOAK_CLIENT_ID}
             client-secret: ${KEYCLOAK_CLIENT_SECRET}
             client-name: user-service
             authorization-grant-type: client_credentials
-            scope: openid, email
+            scope: openid
         provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_ISSUER_URI}
-
+          keycloak-admin:
+            token-uri: ${KEYCLOAK_ISSUER_URI}/protocol/openid-connect/token
       resourceserver:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI}
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      kafkaOtp:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+#logging:
+#  level:
+#    root: INFO
+#    liquibase: DEBUG
+#    com.zaxxer.hikari: DEBUG
+#    org.hibernate.SQL: DEBUG
+
+app:
+  kafka:
+    topics:
+      notification: "otp-notifications"
+  keycloak:
+    realm: "vidify"
